@@ -1,7 +1,7 @@
 import React from 'react';
-import ChatWindow from './components/chatWindow';
 import './index.css';
 import { ToastContainer, Slide } from 'react-toastify';
+import ChatWindow from './components/chatWindow';
 
 
 function App() {
