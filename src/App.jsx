@@ -1,7 +1,7 @@
 import React from 'react';
 import './index.css';
 import { ToastContainer, Slide } from 'react-toastify';
-import ChatWindow from './components/chatWindow';
+import ChatMainWindow from './components/ChatMainWindow';
 
 
 function App() {
@@ -9,7 +9,7 @@ function App() {
   return (
     <>
       <div className="bg-[url('../src/assets/images/bg.jpg')] min-h-screen flex justify-center items-center">
-        <ChatWindow />
+        <ChatMainWindow />
         <ToastContainer
           position="bottom-right"
           autoClose={3000}
