@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { clearUser, setUser } from '../redux/userSlice';
 import { doc, getDoc } from 'firebase/firestore';
 import Loader from '../Loader';
-import UsePresence from './usePresence';
+import Presence from './Presence';
 
 const ChatMainWindow = () => {
     const dispatch = useDispatch();
@@ -68,7 +68,7 @@ const ChatMainWindow = () => {
                     <Login />
                 ) : (
                     <>
-                        <UsePresence />
+                        <Presence />
                         <List />
                         <Chat />
                         <Detail />

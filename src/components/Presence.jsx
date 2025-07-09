@@ -3,7 +3,7 @@ import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { useSelector } from 'react-redux';
 import { db } from '../lib/firebase';
 
-const UsePresence = () => {
+const Presence = () => {
   const user = useSelector((state) => state.user.user);
 
   const markUserOnline = async () => {
@@ -50,4 +50,4 @@ const UsePresence = () => {
   }, [user?.uid]);
 };
 
-export default UsePresence;
+export default Presence;
