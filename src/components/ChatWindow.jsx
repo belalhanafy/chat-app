@@ -12,7 +12,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import Loader from '../Loader';
 import UsePresence from './usePresence';
 
-const ChatWindow = () => {
+const chatWindow = () => {
     const dispatch = useDispatch();
     const user = useSelector((state) => state.user.user);
     const chat = useSelector((state) => state.chat.chat);
@@ -80,4 +80,4 @@ const ChatWindow = () => {
     );
 };
 
-export default ChatWindow;
+export default chatWindow;
