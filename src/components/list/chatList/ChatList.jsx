@@ -339,7 +339,7 @@ useEffect(() => {
             </svg>
           </div>
 
-          <div className="flex items-end text-white hover:text-gray-400 transition">
+          <div className="text-white hover:text-gray-400 transition duration-200">
             <MdOutlineGroupAdd
               onClick={() => setAddMode(true)}
               className="text-2xl cursor-pointer w-fit"

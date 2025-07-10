@@ -164,7 +164,7 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center w-full">
+        <div className="flex items-center justify-center w-full">
             <div className="w-full max-w-md p-6 text-white">
                 {/* Tabs */}
                 <div className="flex bg-gray-700 rounded-lg overflow-hidden mb-6">
