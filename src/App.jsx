@@ -14,6 +14,7 @@ function App() {
           position="bottom-right"
           autoClose={3000}
           transition={Slide}
+          theme="dark"
         />
       </div>
     </>

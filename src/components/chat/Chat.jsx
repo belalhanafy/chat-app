@@ -14,7 +14,8 @@ import { doc, updateDoc, arrayUnion, getDoc, onSnapshot, setDoc } from 'firebase
 import { db } from '../../lib/firebase';
 import { changeShowInfo } from '../../redux/chatSlice';
 import ChatMsgLoading from '../../ChatMsgLoading';
-
+import chatAnimation from '../../lotties/chat.json';
+import { Player } from '@lottiefiles/react-lottie-player';
 const Chat = () => {
   const dispatch = useDispatch();
   const [message, setMessage] = useState('');
@@ -44,7 +45,6 @@ const Chat = () => {
 
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
-  const endRef = useRef(null);
   const maxHeight = 4 * 24;
 
   const isBlocked = user?.blocked?.some(
@@ -117,10 +117,6 @@ const Chat = () => {
   }, [chat?.chatId, chat?.user?.uid]);
 
 
-  // Scroll to bottom on new messages
-  useEffect(() => {
-    if (endRef.current) endRef.current.scrollIntoView({ behavior: 'smooth' });
-  }, [currentChat?.messages.length]);
 
   // Adjust textarea height on message change
   useEffect(() => {
@@ -378,8 +374,17 @@ const Chat = () => {
         } border-r border-l border-gray-800 relative`}
     >
       {chat === null ? (
-        <div className="flex items-center justify-center h-full text-white text-4xl">
-          Select a chat to start messaging
+        <div className="flex items-center justify-center h-full flex-col">
+          <Player
+            autoplay
+            loop
+            src={chatAnimation}
+            style={{ width: '200px', height: '200px' }}
+          />
+          <h2 className='text-center text-3xl text-white'>Welcome to <span className='text-blue-400'>Chatty</span></h2>
+          <p className='text-2xl text-gray-400'>
+            Select a chat to start messaging
+          </p>
         </div>
       ) : (
         <div className="relative h-full flex flex-col text-white rounded-lg shadow-lg">
@@ -404,17 +409,15 @@ const Chat = () => {
               )}
               <div>
                 <h2 className="text-lg font-semibold">{chatUser?.username}</h2>
-                {otherUserTyping ? (
+                {otherUserTyping && chat.user.uid !== user.uid && (
                   <div className="flex items-center gap-2 text-gray-300 text-sm">
                     <span>Typing</span>
                     <span className="w-2 h-2 rounded-full bg-gray-300 animate-bounce [animation-delay:0s]"></span>
                     <span className="w-2 h-2 rounded-full bg-gray-300 animate-bounce [animation-delay:0.15s]"></span>
                     <span className="w-2 h-2 rounded-full bg-gray-300 animate-bounce [animation-delay:0.3s]"></span>
                   </div>
-                ) : (
-                  <p className="text-sm text-gray-300">{chatUser?.status}</p>
                 )}
-                <p className="text-sm text-gray-300 flex items-center gap-2">
+                <div>
                   <p className="text-sm text-gray-300 flex items-center gap-2">
                     {chatUser?.online ? (
                       <>
@@ -430,8 +433,7 @@ const Chat = () => {
                       'Offline'
                     )}
                   </p>
-
-                </p>
+                </div>
 
 
               </div>
@@ -443,7 +445,6 @@ const Chat = () => {
 
           <div className="px-4 pb-5 flex-1 overflow-y-auto scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thin scrollbar-thumb-sky-700 scrollbar-track-sky-300">
             <ChatMessages setMessage={setMessage} currentChat={currentChat} setCurrentChat={setCurrentChat} setReplyTo={setReplyTo} setMsgReact={setMsgReact} setEditedMsg={setEditedMsg} />
-            <div ref={endRef} className="h-0 w-0" />
           </div>
 
           {isBlocked ? (
