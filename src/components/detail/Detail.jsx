@@ -152,27 +152,27 @@ const Detail = () => {
     }
   };
 
- const handleLogout = async () => {
-  const user = auth.currentUser;
-  if (user) {
-    const userRef = doc(db, 'users', user.uid);
+  const handleLogout = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      const userRef = doc(db, 'users', user.uid);
 
-    await updateDoc(userRef, {
-      online: false,
-      lastSeen: serverTimestamp()
-    });
+      await updateDoc(userRef, {
+        online: false,
+        lastSeen: serverTimestamp()
+      });
 
-    await signOut(auth);
+      await signOut(auth);
 
-  }
-};
+    }
+  };
 
   if (!chat) return <div className="relative"></div>;
 
   return (<>
     {showInfo && (
 
-      <div className="flex-1 relative">
+      <div className="flex-1 relative border-l border-gray-800">
         <div className='flex flex-col'>
           {/* Header */}
           <div className="flex flex-col items-center gap-3 border-b border-gray-800 px-4 py-3">
@@ -252,7 +252,39 @@ const Detail = () => {
                       </ul>
 
                     )}
-                    {open[section] && section !== 'sharedPhotos & videos' && (
+                    {open[section] && section === 'sharedFiles' && (
+                      <ul className="space-y-3 mt-3">
+                        {currentChatMsg.map((item, index) => {
+
+                          if (!item.raw) return null;
+                          return (
+                            <li
+                              key={index}
+                              className="flex items-center justify-between"
+                            >
+                              <div className="flex items-center gap-2">
+                                {item.raw && (
+                                  <p className='hover:underline cursor-pointer'>
+                                    <a
+                                      href={item.raw}
+                                      download
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-300 text-sm break-words hover:text-blue-200"
+                                    >
+                                      📄 {item.fileName}
+                                    </a>
+                                  </p>
+                                )}
+                              </div>
+                              <IoInformationCircleOutline />
+                            </li>
+                          );
+                        })}
+                      </ul>
+
+                    )}
+                    {open[section] && section !== 'sharedPhotos & videos' && section !== 'sharedFiles' && (
                       <div className="mt-2 text-sm text-gray-400 px-2">
                         {section} content...
                       </div>

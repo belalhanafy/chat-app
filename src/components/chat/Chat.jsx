@@ -371,7 +371,7 @@ const Chat = () => {
   return (
     <div
       className={`${chat === null || !showInfo ? 'flex-3' : 'flex-2'
-        } border-r border-l border-gray-800 relative`}
+        } border-l border-gray-800 relative`}
     >
       {chat === null ? (
         <div className="flex items-center justify-center h-full flex-col">
