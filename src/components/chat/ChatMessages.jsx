@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { doc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useSelector } from 'react-redux';
@@ -20,12 +20,11 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
   const [usersMap, setUsersMap] = useState({});
   const chat = useSelector((state) => state.chat.chat);
   const user = useSelector((state) => state.user.user);
-  const currentUser = useSelector((state) => state.user.user);
-  const [selectedMsgIndex, setSelectedMsgIndex] = useState(null);
-  const [hoveredMsgIndex, setHoveredMsgIndex] = useState(null);
-  const [contextMenu, setContextMenu] = useState({ visible: false, message: null, index: null });
+  const [selectedMsg, setSelectedMsg] = useState(null);
+  const [hoveredMsg, setHoveredMsg] = useState(null);
+  const [contextMenu, setContextMenu] = useState({ visible: false, message: null });
+
   const endRef = useRef(null);
-  const groupedMessages = [];
 
   const emojiMap = {
     heart: '❤️',
@@ -81,24 +80,29 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
 
   useEffect(() => {
     const handleClick = () => {
-      if (contextMenu.visible) setContextMenu({ visible: false, message: null, index: null });
+      if (contextMenu.visible) setContextMenu({ visible: false, message: null });
     };
     document.addEventListener('click', handleClick);
     return () => document.removeEventListener('click', handleClick);
   }, [contextMenu.visible]);
 
-  if (currentChat?.messages?.length) {
+  const groupedMessages = useMemo(() => {
+    if (!currentChat?.messages?.length) return [];
+    const groups = [];
     let lastGroup = null;
 
     currentChat.messages.forEach((msg) => {
       const groupLabel = getMessageGroupLabel(msg.createdAt);
       if (!lastGroup || lastGroup.label !== groupLabel) {
         lastGroup = { label: groupLabel, messages: [] };
-        groupedMessages.push(lastGroup);
+        groups.push(lastGroup);
       }
       lastGroup.messages.push(msg);
     });
-  }
+
+    return groups;
+  }, [currentChat?.messages]);
+
 
   const handleStarMsg = async (index) => {
     if (index !== null && chat?.chatId) {
@@ -128,6 +132,15 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
     }
   };
 
+  const canEditMessage = (msg) => {
+    const createdAt = msg?.createdAt?.toDate?.();
+    const now = new Date();
+    const diff = createdAt ? now - createdAt : Infinity;
+    const isSender = msg?.senderId === user?.uid;
+    return isSender && diff <= 5 * 60 * 1000 && msg?.text;
+  };
+
+
   return (
     <div className="flex flex-col gap-4 relative">
       {groupedMessages.map((group, groupIndex) => (
@@ -142,14 +155,14 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
 
           {/* Grouped Messages */}
           {group.messages.map((msg, index) => {
-            const isMe = msg.senderId === currentUser.uid;
+            const isMe = msg.senderId === user.uid;
             const sender = usersMap[msg.senderId];
 
             return (
               <div
                 key={index}
-                onMouseEnter={() => setHoveredMsgIndex(index)}
-                onMouseLeave={() => setHoveredMsgIndex(null)}
+                onMouseEnter={() => setHoveredMsg(msg)}
+                onMouseLeave={() => setHoveredMsg(null)}
                 className={`flex items-start gap-2 ${isMe ? 'justify-end' : 'justify-start'} relative group`}
               >
                 {!isMe && (
@@ -169,7 +182,7 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
 
                   {msg.replyTo && (
                     <div className="text-xs text-gray-400 mb-1 border-l-2 pl-2 border-blue-500">
-                      Reply to {msg.replyTo.senderId === currentUser.uid ? 'You' : usersMap[msg.replyTo.senderId]?.username || 'Unknown'}:
+                      Reply to {msg.replyTo.senderId === user.uid ? 'You' : usersMap[msg.replyTo.senderId]?.username || 'Unknown'}:
                       <div className="truncate">{msg.replyTo.text || '[Media]'}</div>
                     </div>
                   )}
@@ -179,7 +192,7 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
                     px-4 py-2 rounded-lg text-sm break-words flex flex-col gap-1
                     ${isMe ? 'text-white self-end bg-blue-600' : 'text-white self-start bg-gray-700'}
                   `}
-                    onClick={() => setSelectedMsgIndex((prev) => (prev === index ? null : index))}
+                    onClick={() => setSelectedMsg((prev) => (prev === msg ? null : msg))}
                   >
 
 
@@ -226,56 +239,48 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
 
 
 
-                  {hoveredMsgIndex === index && (
+                  {hoveredMsg === msg && !contextMenu.visible && (
                     <button
                       className={`absolute top-6 text-white hover:text-gray-300 ${isMe ? '-left-6' : '-right-6'}`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        setContextMenu({ visible: true, message: msg, index });
+                        setContextMenu({ visible: true, message: msg });
                       }}
                     >
                       <HiOutlineDotsVertical size={18} />
                     </button>
                   )}
 
-                  {contextMenu.visible && contextMenu.index === index && (
+                  {contextMenu.visible && contextMenu.message === msg && (
                     <ul className={`absolute ${isMe ? 'right-full mr-2' : 'left-full ml-2'} top-12 w-56 bg-gray-800 text-white border border-gray-700 rounded-lg shadow-lg z-50`}>
                       <li
                         className="px-4 py-2 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
                         onClick={(e) => {
                           e.stopPropagation();
                           setReplyTo(contextMenu.message);
-                          setContextMenu({ visible: false, message: null, index: null });
+                          setContextMenu({ visible: false, message: null });
                         }}
                       >
                         <FaReply />
                         Reply
                       </li>
-                      {(() => {
-                        const createdAt = contextMenu.message?.createdAt?.toDate?.();
-                        const now = new Date();
-                        const diff = createdAt ? now - createdAt : Infinity;
-                        const isSender = contextMenu.message?.senderId === user?.uid;
+                      {canEditMessage(contextMenu.message) && (
+                        <li
+                          className="px-4 py-2 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const msgIndex = currentChat.messages.findIndex((m) => m === contextMenu.message);
+                            if (msgIndex === -1) return;
+                            setEditedMsg({ ...contextMenu.message, msgIndex });
+                            setMessage(contextMenu.message.text);
+                            setContextMenu({ visible: false, message: null });
+                          }}
+                        >
+                          <MdModeEditOutline />
+                          Edit
+                        </li>
+                      )}
 
-                        if (isSender && diff <= 5 * 60 * 1000 && contextMenu.message?.text) {
-                          return (
-                            <li
-                              className="px-4 py-2 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditedMsg({ ...contextMenu.message, msgIndex: index });
-                                setMessage(contextMenu.message.text);
-                                setContextMenu({ visible: false, message: null, index: null });
-                              }}
-                            >
-                              <MdModeEditOutline />
-                              Edit
-                            </li>
-                          );
-                        }
-
-                        return null;
-                      })()}
 
 
                       {contextMenu.message?.text && (
@@ -284,7 +289,7 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
                           onClick={(e) => {
                             e.stopPropagation();
                             navigator.clipboard.writeText(contextMenu.message.text);
-                            setContextMenu({ visible: false, message: null, index: null });
+                            setContextMenu({ visible: false, message: null });
                           }}
                         >
                           <MdContentCopy />
@@ -295,8 +300,10 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
                         className="px-4 py-2 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleStarMsg(contextMenu.index);
-                          setContextMenu({ visible: false, message: null, index: null });
+                          const msgIndex = currentChat.messages.findIndex((m) => m === contextMenu.message);
+                          if (msgIndex === -1) return; // ✅ Add this check
+                          handleStarMsg(msgIndex);
+                          setContextMenu({ visible: false, message: null });
                         }}
                       >
                         {msg.isStarred ? <RiStarOffFill /> : <FaStar />}
@@ -310,12 +317,16 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
                             className={`cursor-pointer ${msg.msgReact === name ? 'bg-gray-700 rounded-full' : ''}`}
                             onClick={() => {
                               // If the clicked reaction is the same as the current one, remove it
-                              const currentReaction = currentChat?.messages?.[index]?.msgReact;
+                              const msgIndex = currentChat.messages.findIndex((m) => m === contextMenu.message);
+                              if (msgIndex === -1) return; // ✅ Add this check
+
+                              const currentReaction = contextMenu.message.msgReact;
+
                               setMsgReact({
                                 reaction: currentReaction === name ? null : name,
-                                index,
+                                index: msgIndex,
                               });
-                              setContextMenu({ visible: false, message: null, index: null });
+                              setContextMenu({ visible: false, message: null });
                             }}
 
                           >
@@ -338,7 +349,7 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
                   )}
 
 
-                  {selectedMsgIndex === index && (
+                  {selectedMsg === msg && (
                     <div className={`flex gap-2 mt-1 text-xs ${isMe ? 'justify-end text-right text-gray-400' : 'justify-start text-left text-gray-400'}`}>
                       <span>{getTimeAgo(msg.createdAt)}</span>
                       {msg.text && msg.edited && <span className="italic opacity-70">(edited)</span>}
