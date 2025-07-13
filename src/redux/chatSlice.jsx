@@ -5,6 +5,7 @@ const initialState = {
     chat : null,
     showInfo : false,
     userChats: [],
+    showClickableChat: false
 };
 
 const chatSlice = createSlice({
@@ -20,8 +21,11 @@ const chatSlice = createSlice({
         setUserChats: (state, action) => {
             state.userChats = action.payload
         },
+        changeShowClickableChat: (state, action) => {
+            state.showClickableChat = action.payload
+        },
     },
 });
 
-export const { changeChat, changeShowInfo, setUserChats } = chatSlice.actions;
+export const { changeChat, changeShowInfo, setUserChats, changeShowClickableChat } = chatSlice.actions;
 export default chatSlice.reducer;

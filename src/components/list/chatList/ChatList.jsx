@@ -5,7 +5,7 @@ import AddUserModal from '../../AddUserModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { arrayRemove, arrayUnion, doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
-import { changeChat, setUserChats } from '../../../redux/chatSlice';
+import { changeChat, changeShowClickableChat, setUserChats } from '../../../redux/chatSlice';
 import { updateDoc } from 'firebase/firestore';
 import { setUser } from '../../../redux/userSlice';
 import { getMsgTime } from '../../../utils/time';
@@ -245,6 +245,7 @@ const ChatList = () => {
   };
 
   const handleChatClick = async (selectedChat) => {
+    dispatch(changeShowClickableChat(true));
     const userChatsRef = doc(db, "userChats", user.uid);
     const userChatsSnap = await getDoc(userChatsRef);
 
@@ -354,21 +355,27 @@ const ChatList = () => {
   };
 
   return (
-    <div className='flex flex-col flex-1 overflow-hidden px-4 py-3 bg-gray-800 text-white rounded-lg shadow-lg'>
+    <div className='flex flex-col w-full h-full bg-gray-800 text-white rounded-lg shadow-lg overflow-hidden px-4 py-3'>
       <div>
         <div className='flex items-center justify-between mb-4'>
           <h2 className='text-xl'>Chats</h2>
+          <div className="text-white hover:text-gray-400 transition duration-200 xl:hidden block">
+            <MdOutlineGroupAdd
+              onClick={() => setAddMode(true)}
+              className="text-2xl cursor-pointer w-fit"
+            />
+          </div>
         </div>
 
-        <div className="flex items-center justify-between mb-4">
-          <div className="relative w-fit rounded-md border border-gray-300 focus-within:border-blue-500 transition">
+        <div className="flex items-center justify-between mb-4 gap-2">
+          <div className="relative w-full xl:w-fit rounded-md border border-gray-300 focus-within:border-blue-500 transition">
             <input
               type="search"
               name="search"
               value={search}
               onChange={handleSearch}
               placeholder="Search..."
-              className="w-56 px-5 py-2 pr-10 rounded-md text-sm outline-none transition-all duration-300 focus:w-[17.6rem] focus:ring-2 focus:ring-blue-500"
+              className="w-full xl:w-56 px-5 py-2 pr-10 rounded-md text-sm outline-none transition-all duration-300 xl:focus:w-[16.5rem] focus:ring-2 focus:ring-blue-500"
             />
 
             <svg
@@ -387,7 +394,7 @@ const ChatList = () => {
             </svg>
           </div>
 
-          <div className="text-white hover:text-gray-400 transition duration-200">
+          <div className="text-white hover:text-gray-400 transition duration-200 xl:block hidden">
             <MdOutlineGroupAdd
               onClick={() => setAddMode(true)}
               className="text-2xl cursor-pointer w-fit"

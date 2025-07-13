@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useSelector } from 'react-redux';
 import { HiOutlineDotsVertical } from 'react-icons/hi';
@@ -13,6 +13,8 @@ import { FaReply } from 'react-icons/fa';
 import { MdContentCopy } from 'react-icons/md';
 import { MdModeEditOutline } from "react-icons/md";
 import { getMsgTime, getTimeAgo, getMessageGroupLabel } from '../../utils/time';
+import { FaStar } from "react-icons/fa";
+import { RiStarOffFill } from "react-icons/ri";
 
 const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, setEditedMsg, setMessage }) => {
   const [usersMap, setUsersMap] = useState({});
@@ -40,6 +42,8 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
     { name: 'wink', anim: winkAnimation },
     { name: 'sad', anim: sadAnimation },
   ];
+
+
 
   useEffect(() => {
     if (!chat?.chatId) return;
@@ -95,6 +99,35 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
       lastGroup.messages.push(msg);
     });
   }
+
+  const handleStarMsg = async (index) => {
+    if (index !== null && chat?.chatId) {
+      const msg = currentChat.messages[index];
+
+      try {
+        const chatRef = doc(db, 'chats', chat.chatId); // ✅ use chat.chatId here
+        const chatSnap = await getDoc(chatRef);
+        if (!chatSnap.exists()) return;
+
+        const chatData = chatSnap.data();
+        const updatedMessages = [...chatData.messages];
+
+        updatedMessages[index] = {
+          ...msg,
+          isStarred: !msg.isStarred,
+        };
+
+        await updateDoc(chatRef, {
+          messages: updatedMessages,
+        });
+
+        setCurrentChat({ ...currentChat, messages: updatedMessages });
+      } catch (error) {
+        console.error('Error updating starred message:', error);
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col gap-4 relative">
       {groupedMessages.map((group, groupIndex) => (
@@ -143,9 +176,9 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
 
                   <div
                     className={`
-                  px-4 py-2 rounded-lg text-sm break-words flex flex-col gap-1
-                  ${isMe ? 'text-white self-end bg-blue-600' : 'text-white self-start bg-gray-700'}
-                `}
+                    px-4 py-2 rounded-lg text-sm break-words flex flex-col gap-1
+                    ${isMe ? 'text-white self-end bg-blue-600' : 'text-white self-start bg-gray-700'}
+                  `}
                     onClick={() => setSelectedMsgIndex((prev) => (prev === index ? null : index))}
                   >
 
@@ -184,6 +217,7 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
 
                       {/* Timestamp (at the bottom of the bubble) */}
                       <div className={`text-[10px] ml-4 mt-2 ${isMe ? 'text-right text-gray-200 self-end' : 'text-left text-gray-300 self-start'}`}>
+                        {msg.isStarred && <span className="mr-1">⭐️</span>}
                         {getMsgTime(msg.createdAt)}
                       </div>
                     </div>
@@ -257,6 +291,18 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
                           Copy
                         </li>
                       )}
+                      <li
+                        className="px-4 py-2 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleStarMsg(contextMenu.index);
+                          setContextMenu({ visible: false, message: null, index: null });
+                        }}
+                      >
+                        {msg.isStarred ? <RiStarOffFill /> : <FaStar />}
+                        {msg.isStarred ? 'Unstar ' : 'Star '}
+                        message
+                      </li>
                       <li className="flex items-center justify-around px-2 py-1">
                         {reactionAnimations.map(({ name, anim }, i) => (
                           <div

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { IoInformationCircleOutline } from 'react-icons/io5';
+import { IoInformationCircleOutline, IoArrowBackOutline } from 'react-icons/io5';
 import { CiFaceSmile } from 'react-icons/ci';
 import { MdInsertDriveFile } from 'react-icons/md';
 import { PiImageSquareDuotone } from 'react-icons/pi';
@@ -16,6 +16,8 @@ import { changeShowInfo } from '../../redux/chatSlice';
 import ChatMsgLoading from '../../ChatMsgLoading';
 import chatAnimation from '../../lotties/chat.json';
 import { Player } from '@lottiefiles/react-lottie-player';
+import { changeShowClickableChat } from '../../redux/chatSlice';
+
 const Chat = () => {
   const dispatch = useDispatch();
   const [message, setMessage] = useState('');
@@ -30,7 +32,7 @@ const Chat = () => {
   const [editedMsg, setEditedMsg] = useState({
     msgIndex: null
   })
-  const { chat, showInfo } = useSelector((state) => state.chat);
+  const { chat, showInfo, showClickableChat } = useSelector((state) => state.chat);
   const user = useSelector((state) => state.user.user);
 
   const [isTyping, setIsTyping] = useState(false);
@@ -371,8 +373,9 @@ const Chat = () => {
   return (
     <div
       className={`${chat === null || !showInfo ? 'flex-3' : 'flex-2'
-        } border-l border-gray-800 relative`}
+        }  border-gray-800 relative border-l ${showClickableChat && !showInfo ? 'flex' : 'hidden'} md:flex flex-col overflow-hidden`}
     >
+
       {chat === null ? (
         <div className="flex items-center justify-center h-full flex-col">
           <Player
@@ -390,6 +393,15 @@ const Chat = () => {
         <div className="relative h-full flex flex-col text-white rounded-lg shadow-lg">
           <div className="flex justify-between items-center mb-2 border-b px-4 py-3 border-gray-800">
             <div className="flex items-center gap-4">
+              {/* Back arrow on mobile */}
+              <button
+                onClick={() => dispatch(changeShowClickableChat(false))}
+                className="md:hidden text-white text-2xl hover:text-gray-300 cursor-pointer transition-all duration-300 ease-in-out"
+              >
+                <IoArrowBackOutline />
+              </button>
+
+              {/* Avatar or initials */}
               {isBlockedByOther ? (
                 <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-xl font-bold uppercase">
                   {chatUser?.username?.charAt(0)}
@@ -407,6 +419,8 @@ const Chat = () => {
                   </div>
                 )
               )}
+
+              {/* Username and status */}
               <div>
                 <h2 className="text-lg font-semibold">{chatUser?.username}</h2>
                 {otherUserTyping && chat.user.uid !== user.uid && (
@@ -417,31 +431,30 @@ const Chat = () => {
                     <span className="w-2 h-2 rounded-full bg-gray-300 animate-bounce [animation-delay:0.3s]"></span>
                   </div>
                 )}
-                <div>
-                  <p className="text-sm text-gray-300 flex items-center gap-2">
-                    {chatUser?.online ? (
-                      <>
-                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                        Online
-                      </>
-                    ) : chatUser?.lastSeen ? (
-                      <>
-                        <span className="w-2 h-2 rounded-full bg-gray-500" />
-                        Last seen at {formatTime(chatUser.lastSeen.toDate())}
-                      </>
-                    ) : (
-                      'Offline'
-                    )}
-                  </p>
-                </div>
-
-
+                <p className="text-sm text-gray-300 flex items-center gap-2">
+                  {chatUser?.online ? (
+                    <>
+                      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                      Online
+                    </>
+                  ) : chatUser?.lastSeen ? (
+                    <>
+                      <span className="w-2 h-2 rounded-full bg-gray-500" />
+                      Last seen at {formatTime(chatUser.lastSeen.toDate())}
+                    </>
+                  ) : (
+                    'Offline'
+                  )}
+                </p>
               </div>
             </div>
+
+            {/* Info button */}
             <div className="flex items-center gap-4 text-xl cursor-pointer">
               <IoInformationCircleOutline onClick={() => dispatch(changeShowInfo(!showInfo))} />
             </div>
           </div>
+
 
           <div className="px-4 pb-5 flex-1 overflow-y-auto scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thin scrollbar-thumb-sky-700 scrollbar-track-sky-300">
             <ChatMessages setMessage={setMessage} currentChat={currentChat} setCurrentChat={setCurrentChat} setReplyTo={setReplyTo} setMsgReact={setMsgReact} setEditedMsg={setEditedMsg} />

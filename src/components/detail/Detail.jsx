@@ -11,9 +11,9 @@ import {
 } from 'firebase/firestore';
 import { auth, db } from '../../lib/firebase';
 import { clearUser, setUser } from '../../redux/userSlice';
-import { changeChat } from '../../redux/chatSlice';
+import { changeChat, changeShowClickableChat, changeShowInfo } from '../../redux/chatSlice';
 import { IoIosArrowDropdown } from 'react-icons/io';
-import { IoInformationCircleOutline } from 'react-icons/io5';
+import { IoInformationCircleOutline, IoArrowBackOutline } from 'react-icons/io5';
 import { signOut } from 'firebase/auth';
 
 const Detail = () => {
@@ -22,12 +22,14 @@ const Detail = () => {
     privacyHelp: false,
     sharedPhotos: false,
     sharedFiles: false,
+    starredMsg: false, // ✅ add this
+
   });
 
   const [currentChatMsg, setCurrentChatMsg] = useState(null);
 
   const dispatch = useDispatch();
-  const { chat, showInfo } = useSelector((state) => state.chat);
+  const { chat, showInfo, showClickableChat } = useSelector((state) => state.chat);
   const user = useSelector((state) => state.user.user);
 
   const isBlocked = user?.blocked?.some(
@@ -172,10 +174,17 @@ const Detail = () => {
   return (<>
     {showInfo && (
 
-      <div className="flex-1 relative border-l border-gray-800">
+      <div className={`flex-1 relative border-l border-gray-800`}>
         <div className='flex flex-col'>
           {/* Header */}
           <div className="flex flex-col items-center gap-3 border-b border-gray-800 px-4 py-3">
+            <IoArrowBackOutline
+              onClick={() => {
+                dispatch(changeShowInfo(false));
+                dispatch(changeShowClickableChat(true));
+              }}
+              className="text-2xl text-white cursor-pointer hover:text-gray-300 lg:hidden block"
+            />
             {isBlockedByOther ? (
               <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-xl font-bold uppercase">
                 {chat.user?.username?.charAt(0)}
@@ -206,7 +215,7 @@ const Detail = () => {
           <div className="h-[calc(100vh-340px)] overflow-y-auto px-4 py-3 scrollbar-thin scrollbar-thumb-sky-700 scrollbar-track-sky-300">
             {/* Accordion */}
             <ul className="px-4 py-3 space-y-4 flex-1">
-              {['chatSetting', 'privacyHelp', 'sharedPhotos & videos', 'sharedFiles'].map(
+              {['chatSetting', 'privacyHelp', 'sharedPhotos & videos', 'sharedFiles', 'starredMsgs'].map(
                 (section) => (
                   <li key={section}>
                     <div
@@ -215,20 +224,58 @@ const Detail = () => {
                     >
                       <p>{section.replace(/([A-Z])/g, ' $1')}</p>
                       <IoIosArrowDropdown
-                        className={`transition-transform ${open[section] ? 'rotate-180' : ''
-                          }`}
+                        className={`transition-transform ${open[section] ? 'rotate-180' : ''}`}
                       />
                     </div>
+
+                    {/* ⭐ starred Messages Section */}
+                    {open[section] && section === 'starredMsgs' && (
+                      <ul className="space-y-3 mt-3">
+                        {currentChatMsg
+                          ?.filter((msg) => msg.isStarred)
+                          ?.map((msg, index) => (
+                            <li key={index} className="flex items-center justify-between">
+                              <div className="flex flex-col gap-1 text-sm">
+                                {msg.text && <p>💬 {msg.text}</p>}
+                                {msg.image && (
+                                  <img
+                                    src={msg.image}
+                                    alt="starred"
+                                    className="w-20 rounded-sm"
+                                  />
+                                )}
+                                {msg.video && (
+                                  <video
+                                    src={msg.video}
+                                    controls
+                                    className="w-20 rounded-sm"
+                                  />
+                                )}
+                                {msg.raw && (
+                                  <a
+                                    href={msg.raw}
+                                    download
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-300 underline hover:text-blue-200"
+                                  >
+                                    📄 {msg.fileName}
+                                  </a>
+                                )}
+                              </div>
+                              <IoInformationCircleOutline />
+                            </li>
+                          ))}
+                      </ul>
+                    )}
+
+                    {/* Existing shared media/files/help sections... */}
                     {open[section] && section === 'sharedPhotos & videos' && (
                       <ul className="space-y-3 mt-3">
-                        {currentChatMsg.map((item, index) => {
-
+                        {currentChatMsg?.map((item, index) => {
                           if (!item.image && !item.video) return null;
                           return (
-                            <li
-                              key={index}
-                              className="flex items-center justify-between"
-                            >
+                            <li key={index} className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 {item.image ? (
                                   <img
@@ -250,48 +297,46 @@ const Detail = () => {
                           );
                         })}
                       </ul>
-
                     )}
+
                     {open[section] && section === 'sharedFiles' && (
                       <ul className="space-y-3 mt-3">
-                        {currentChatMsg.map((item, index) => {
-
+                        {currentChatMsg?.map((item, index) => {
                           if (!item.raw) return null;
                           return (
-                            <li
-                              key={index}
-                              className="flex items-center justify-between"
-                            >
+                            <li key={index} className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                {item.raw && (
-                                  <p className='hover:underline cursor-pointer'>
-                                    <a
-                                      href={item.raw}
-                                      download
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-blue-300 text-sm break-words hover:text-blue-200"
-                                    >
-                                      📄 {item.fileName}
-                                    </a>
-                                  </p>
-                                )}
+                                <p className="hover:underline cursor-pointer">
+                                  <a
+                                    href={item.raw}
+                                    download
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-300 text-sm break-words hover:text-blue-200"
+                                  >
+                                    📄 {item.fileName}
+                                  </a>
+                                </p>
                               </div>
                               <IoInformationCircleOutline />
                             </li>
                           );
                         })}
                       </ul>
+                    )}
 
-                    )}
-                    {open[section] && section !== 'sharedPhotos & videos' && section !== 'sharedFiles' && (
-                      <div className="mt-2 text-sm text-gray-400 px-2">
-                        {section} content...
-                      </div>
-                    )}
+                    {open[section] &&
+                      section !== 'sharedPhotos & videos' &&
+                      section !== 'sharedFiles' &&
+                      section !== 'starredMsgs' && (
+                        <div className="mt-2 text-sm text-gray-400 px-2">
+                          {section} content...
+                        </div>
+                      )}
                   </li>
                 )
               )}
+
             </ul>
 
           </div>
