@@ -252,7 +252,7 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
                   )}
 
                   {contextMenu.visible && contextMenu.message === msg && (
-                    <ul className={`absolute ${isMe ? 'right-full mr-2' : 'left-full ml-2'} top-12 w-56 bg-gray-800 text-white border border-gray-700 rounded-lg shadow-lg z-50`}>
+                    <ul className={`absolute ${isMe ? 'right-full md:mr-2 -mr-30 top-full' : 'left-full md:ml-2 -ml-20 top-full'} md:top-12 w-56 bg-gray-800 text-white border border-gray-700 rounded-lg shadow-lg z-50`}>
                       <li
                         className="px-4 py-2 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
                         onClick={(e) => {
