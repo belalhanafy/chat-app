@@ -10,7 +10,7 @@ const List = () => {
     <div
       className={`
         ${showInfo ? 'flex-1' : 'md:flex-2 xl:flex-1'}
-        p-4 h-full text-white rounded-lg shadow-lg flex flex-col overflow-hidden flex-1
+        lg:p-4 p-2 h-full text-white rounded-lg shadow-lg flex flex-col overflow-hidden flex-1
         ${showClickableChat ? 'md:block hidden' : 'block'}
       `}
     >

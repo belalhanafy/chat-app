@@ -164,7 +164,7 @@ const ChatList = () => {
             </div>
           )}
 
-          <div className='flex items-center justify-between w-full'>
+          <div className='flex items-center justify-between w-full gap-2'>
             <div className='flex items-start flex-col gap-1'>
               <div className="flex items-center gap-2">
                 <h2 className={`text-md font-bold ${isUnread ? 'text-blue-400' : 'text-white'}`}>
@@ -355,7 +355,7 @@ const ChatList = () => {
   };
 
   return (
-    <div className='flex flex-col w-full h-full bg-gray-800 text-white rounded-lg shadow-lg overflow-hidden px-4 py-3'>
+    <div className='flex flex-col w-full h-full bg-gray-800 text-white rounded-lg shadow-lg overflow-hidden lg:px-4 px-2 py-3'>
       <div>
         <div className='flex items-center justify-between mb-4'>
           <h2 className='text-xl'>Chats</h2>

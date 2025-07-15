@@ -391,7 +391,7 @@ const Chat = () => {
         </div>
       ) : (
         <div className="relative h-full flex flex-col text-white rounded-lg shadow-lg">
-          <div className="flex justify-between items-center mb-2 border-b px-4 py-3 border-gray-800">
+          <div className="flex justify-between items-center mb-2 border-b px-4 lg:py-3 py-2 border-gray-800">
             <div className="flex items-center gap-4">
               {/* Back arrow on mobile */}
               <button
