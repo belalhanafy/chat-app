@@ -164,7 +164,7 @@ const ChatList = () => {
             </div>
           )}
 
-          <div className='flex items-center justify-between w-full gap-2'>
+          <div className='flex items-center justify-between w-full'>
             <div className='flex items-start flex-col gap-1'>
               <div className="flex items-center gap-2">
                 <h2 className={`text-md font-bold ${isUnread ? 'text-blue-400' : 'text-white'}`}>
