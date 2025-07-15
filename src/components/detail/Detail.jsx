@@ -26,11 +26,13 @@ const Detail = () => {
 
   });
 
+
   const [currentChatMsg, setCurrentChatMsg] = useState(null);
 
   const dispatch = useDispatch();
-  const { chat, showInfo, showClickableChat } = useSelector((state) => state.chat);
+  const { chat, showInfo } = useSelector((state) => state.chat);
   const user = useSelector((state) => state.user.user);
+  const [chatUserInfo, setChatUserInfo] = useState(chat?.user || {});
 
   const isBlocked = user?.blocked?.some(
     (entry) =>
@@ -169,7 +171,26 @@ const Detail = () => {
     }
   };
 
-  if (!chat) return <div className="relative"></div>;
+  useEffect(() => {
+    if (!chat?.user?.uid) return;
+
+    const unsub = onSnapshot(doc(db, 'users', chat.user.uid), (docSnap) => {
+      if (docSnap.exists()) {
+        setChatUserInfo(docSnap.data());
+      }
+    });
+
+    return () => unsub();
+  }, [chat?.user?.uid, showInfo]);
+
+  if (!chat) {
+    return (
+      <div className="flex items-center justify-center h-full text-gray-400">
+        No chat selected
+      </div>
+    );
+  }
+
 
   return (<>
     {showInfo && (
@@ -187,23 +208,23 @@ const Detail = () => {
             />
             {isBlockedByOther ? (
               <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-xl font-bold uppercase">
-                {chat.user?.username?.charAt(0)}
+                {chatUserInfo?.username?.charAt(0)}
               </div>
             ) : (
-              chat.user?.avatar ? (
+              chatUserInfo?.avatar ? (
                 <img
-                  src={chat.user.avatar}
-                  alt={chat.user.username}
+                  src={chatUserInfo.avatar}
+                  alt={chatUserInfo.username}
                   className="w-16 h-16 object-top rounded-full object-cover"
                 />
               ) : (
                 <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-xl font-bold uppercase">
-                  {chat.user?.username?.charAt(0)}
+                  {chatUserInfo?.username?.charAt(0)}
                 </div>
               )
             )}
-            <h2 className="text-lg font-semibold">{chat.user?.username}</h2>
-            <p className="text-sm text-gray-300">{chat.user?.status}</p>
+            <h2 className="text-lg font-semibold">{chatUserInfo?.username}</h2>
+            <p className="text-sm text-gray-300">{chatUserInfo?.status}</p>
 
             {isBlockedByOther && (
               <div className="text-red-400 text-sm text-center font-medium px-2 mt-1">
@@ -343,10 +364,10 @@ const Detail = () => {
         </div>
         {/* Footer Buttons */}
         <div className="absolute bottom-0 right-0 w-full px-4 py-2 flex flex-col gap-4">
-          {user.uid !== chat.user.uid && (
+          {user.uid !== chatUserInfo.uid && (
 
             <button
-              onClick={() => handleBlock(chat.chatId, chat.user.uid)}
+              onClick={() => handleBlock(chat.chatId, chatUserInfo.uid)}
               className="bg-red-600 text-white px-4 py-2 rounded-xl hover:bg-red-800"
             >
               {isBlocked ? 'Unblock' : 'Block'}

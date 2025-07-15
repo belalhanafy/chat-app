@@ -167,7 +167,7 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
               >
                 {!isMe && (
                   sender?.avatar ? (
-                    <img src={sender.avatar} alt={sender.username} className="w-10 h-10 object-cover border rounded-full object-top" />
+                    <img src={sender.avatar} alt={sender.username} className="w-10 h-10 object-cover object-top border rounded-full" />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-xl font-bold uppercase">
                       {sender?.username?.charAt(0)}
@@ -359,7 +359,7 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
 
                 {isMe && (
                   sender?.avatar ? (
-                    <img src={sender.avatar} alt={sender.username} className="w-10 h-10 object-cover border rounded-full" />
+                    <img src={sender.avatar} alt={sender.username} className="w-10 h-10 object-cover border rounded-full object-top" />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-xl font-bold uppercase">
                       {sender?.username?.charAt(0)}
