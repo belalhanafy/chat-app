@@ -185,8 +185,7 @@ const Detail = () => {
 
   if (!chat) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-400">
-        No chat selected
+      <div className="relative">
       </div>
     );
   }
