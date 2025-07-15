@@ -170,7 +170,7 @@ const ChatList = () => {
                 <h2 className={`text-md font-bold ${isUnread ? 'text-blue-400' : 'text-white'}`}>
                   {currentChat?.user?.username}
                   {user.uid === currentChat.receiverId && (
-                    <span className="text-xs text-gray-400 ml-1">(You)</span>
+                    <span className="text-xs text-gray-200 ml-1">(You)</span>
                   )}
                 </h2>
                 {isUnread && <span className="w-2 h-2 bg-blue-400 rounded-full" />}
