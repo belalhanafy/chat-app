@@ -253,7 +253,7 @@ const Detail = () => {
                     {open[section] && section === 'starredMsgs' && (
                       <ul className="space-y-3 mt-3">
                         {currentChatMsg
-                          ?.filter((msg) => msg.isStarred)
+                          ?.filter((msg) => msg.starMsg?.isStarred && msg.starMsg.senderId === user?.uid)
                           ?.map((msg, index) => (
                             <li key={index} className="flex items-center justify-between">
                               <div className="flex flex-col gap-1 text-sm">
@@ -289,6 +289,7 @@ const Detail = () => {
                           ))}
                       </ul>
                     )}
+
 
                     {/* Existing shared media/files/help sections... */}
                     {open[section] && section === 'sharedPhotos & videos' && (

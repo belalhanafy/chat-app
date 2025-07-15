@@ -109,7 +109,7 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
       const msg = currentChat.messages[index];
 
       try {
-        const chatRef = doc(db, 'chats', chat.chatId); // ✅ use chat.chatId here
+        const chatRef = doc(db, 'chats', chat.chatId);
         const chatSnap = await getDoc(chatRef);
         if (!chatSnap.exists()) return;
 
@@ -118,7 +118,11 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
 
         updatedMessages[index] = {
           ...msg,
-          isStarred: !msg.isStarred,
+          starMsg: {
+            isStarred: !msg.starMsg?.isStarred,
+            starredAt: new Date(),
+            senderId: user.uid,
+          },
         };
 
         await updateDoc(chatRef, {
@@ -131,6 +135,7 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
       }
     }
   };
+
 
   const canEditMessage = (msg) => {
     const createdAt = msg?.createdAt?.toDate?.();
@@ -230,7 +235,7 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
 
                       {/* Timestamp (at the bottom of the bubble) */}
                       <div className={`text-[10px] ml-4 mt-2 ${isMe ? 'text-right text-gray-200 self-end' : 'text-left text-gray-300 self-start'}`}>
-                        {msg.isStarred && <span className="mr-1">⭐️</span>}
+                        {msg.starMsg?.isStarred && <span className="mr-1">⭐️</span>}
                         {getMsgTime(msg.createdAt)}
                       </div>
                     </div>
@@ -306,8 +311,8 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
                           setContextMenu({ visible: false, message: null });
                         }}
                       >
-                        {msg.isStarred ? <RiStarOffFill /> : <FaStar />}
-                        {msg.isStarred ? 'Unstar ' : 'Star '}
+                        {msg.starMsg?.isStarred ? <RiStarOffFill /> : <FaStar />}
+                        {msg.starMsg?.isStarred ? 'Unstar ' : 'Star '}
                         message
                       </li>
                       <li className="flex items-center justify-around px-2 py-1">
