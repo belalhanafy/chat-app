@@ -168,7 +168,7 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
                 key={index}
                 onMouseEnter={() => setHoveredMsg(msg)}
                 onMouseLeave={() => setHoveredMsg(null)}
-                className={`flex items-start gap-2 ${isMe ? 'justify-end' : 'justify-start'} relative group`}
+                className={`flex items-start space-y-2 gap-2 ${isMe ? 'justify-end' : 'justify-start'} relative group`}
               >
                 {!isMe && (
                   sender?.avatar ? (
@@ -204,14 +204,14 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
                     {/* Image */}
                     {msg.image && (
                       <div className="p-2 bg-black/30 rounded-lg">
-                        <img src={msg.image} alt="chat" className="w-40 rounded-lg" />
+                        <img src={msg.image} alt="chat" className="md:w-80 w-40 rounded-lg" />
                       </div>
                     )}
 
                     {/* Video */}
                     {msg.video && (
                       <div className="p-2 bg-black/30 rounded-lg">
-                        <video controls src={msg.video} className="w-60 rounded-lg" />
+                        <video controls src={msg.video} className="w-40 md:w-80 rounded-lg" />
                       </div>
                     )}
 
@@ -257,7 +257,7 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
                   )}
 
                   {contextMenu.visible && contextMenu.message === msg && (
-                    <ul className={`absolute ${isMe ? 'right-full lg:mr-2 -mr-30 top-full' : 'left-full lg:ml-2 -ml-20 top-full'} md:top-12 w-56 bg-gray-800 text-white border border-gray-700 rounded-lg shadow-lg z-50`}>
+                    <ul className={`absolute ${isMe ? 'right-full lg:mr-2 -mr-40 top-full' : 'left-full lg:ml-2 -ml-40 top-full'} md:top-12 w-56 bg-gray-800 text-white border border-gray-700 rounded-lg shadow-lg z-50`}>
                       <li
                         className="px-4 py-2 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
                         onClick={(e) => {
@@ -348,7 +348,7 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
                     </ul>
                   )}
                   {msg.msgReact && emojiMap[msg.msgReact] && (
-                    <div className={`absolute -bottom-4 ${isMe ? '-left-2' : '-right-2'} w-6 h-6 text-sm bg-gray-500 rounded-full flex items-center justify-center`}>
+                    <div className={`absolute -bottom-2 ${isMe ? '-left-2' : '-right-2'} w-6 h-6 text-sm bg-gray-500 rounded-full flex items-center justify-center`}>
                       {emojiMap[msg.msgReact]}
                     </div>
                   )}

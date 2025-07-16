@@ -255,13 +255,14 @@ const Chat = () => {
 
     try {
       const chatRef = doc(db, 'chats', chat.chatId);
+      let chatData = null;
 
       if (Number.isInteger(editedMsg?.msgIndex)) {
         // Edit message
         const chatSnap = await getDoc(chatRef);
         if (!chatSnap.exists()) return;
 
-        const chatData = chatSnap.data();
+        chatData = chatSnap.data();
         const updatedMessages = [...chatData.messages];
         const oldMsg = updatedMessages[editedMsg?.msgIndex];
 
@@ -289,14 +290,32 @@ const Chat = () => {
 
             // Skip lastMessage update if editing an old message
             if (Number.isInteger(editedMsg?.msgIndex)) {
+              const isLastMsg = editedMsg.msgIndex === chatData.messages.length - 1;
+
               return {
                 ...c,
+                ...(isLastMsg && {
+                  lastMessage:
+                    mediaType === 'raw' && message
+                      ? `${message} 📎`
+                      : mediaType === 'raw'
+                        ? '📎 document'
+                        : mediaType === 'video' && message
+                          ? `${message} 📹`
+                          : mediaType === 'image' && message
+                            ? `${message} 📷`
+                            : mediaType === 'image'
+                              ? '📷 image'
+                              : mediaType === 'video'
+                                ? '📹 video'
+                                : message,
+                }),
                 updatedAt: Date.now(),
                 isSeen: uid === user.uid,
                 unreadMessages: uid === user.uid ? 0 : c.unreadMessages + 1,
-                // Optionally: keep replyTo unchanged
               };
             }
+
 
             // New message: update lastMessage as usual
             return {
@@ -548,7 +567,7 @@ const Chat = () => {
                       <button className="text-xs text-red-500" onClick={() => setReplyTo(null)}>Cancel</button>
                     </div>
                   )}
-                  {editedMsg?.msgIndex && (
+                  {editedMsg?.msgIndex !== null && editedMsg?.msgIndex !== undefined && (
                     <div className="bg-gray-800 p-2 border-l-4 border-blue-500 mb-2">
                       <div className="text-xs text-white">
                         edit message
