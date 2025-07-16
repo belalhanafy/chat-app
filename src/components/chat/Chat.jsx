@@ -140,7 +140,6 @@ const Chat = () => {
       if (!chatSnap.exists()) return;
 
       const chatData = chatSnap.data();
-      console.log(chatData);
 
       if (
         msgReact.index !== undefined &&
