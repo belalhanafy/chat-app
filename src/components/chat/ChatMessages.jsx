@@ -15,6 +15,7 @@ import { MdModeEditOutline } from "react-icons/md";
 import { getMsgTime, getTimeAgo, getMessageGroupLabel } from '../../utils/time';
 import { FaStar } from "react-icons/fa";
 import { RiStarOffFill } from "react-icons/ri";
+import CurrentLocation from '../../CurrentLocation';
 
 const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, setEditedMsg, setMessage }) => {
   const [usersMap, setUsersMap] = useState({});
@@ -228,15 +229,33 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
                       </a>
                     )}
 
+                    {msg.type === 'location' && (
+                      <a
+                        href={`https://www.google.com/maps?q=${msg.lat},${msg.lng}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block w-full max-w-xs md:max-w-md rounded-lg overflow-hidden shadow"
+                      >
+                        <CurrentLocation lat={msg.lat} lng={msg.lng} />
+                      </a>
+                    )}
 
-                    <div className='flex justify-between'>
+
+
+
+                    <div className={`flex ${msg.text ? 'justify-between' : 'flex-col items-start'}`}>
                       {/* Text message */}
                       {msg.text && <div>{msg.text}</div>}
 
                       {/* Timestamp (at the bottom of the bubble) */}
-                      <div className={`text-[10px] ml-4 mt-2 ${isMe ? 'text-right text-gray-200 self-end' : 'text-left text-gray-300 self-start'}`}>
-                        {msg.starMsg?.isStarred && <span className="mr-1">⭐️</span>}
-                        {getMsgTime(msg.createdAt)}
+                      <div className={`text-[10px] flex items-center ml-4 mt-2 ${isMe ? 'text-right text-gray-200 self-end' : 'text-left text-gray-300 self-start'}`}>
+                        <div>
+
+                          {msg.starMsg?.isStarred && <span className="mr-1">⭐️</span>}
+                        </div>
+                        <p>
+                          {getMsgTime(msg.createdAt)}
+                        </p>
                       </div>
                     </div>
                   </div>

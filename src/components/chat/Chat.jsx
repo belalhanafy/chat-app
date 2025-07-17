@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { IoInformationCircleOutline, IoArrowBackOutline } from 'react-icons/io5';
+import { IoInformationCircleOutline, IoArrowBackOutline, IoLocationOutline } from 'react-icons/io5';
 import { CiFaceSmile } from 'react-icons/ci';
 import { MdInsertDriveFile } from 'react-icons/md';
 import { PiImageSquareDuotone } from 'react-icons/pi';
@@ -10,7 +10,7 @@ import EmojiPicker from 'emoji-picker-react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import ChatMessages from './ChatMessages';
-import { doc, updateDoc, arrayUnion, getDoc, onSnapshot, setDoc } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion, getDoc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { changeShowInfo } from '../../redux/chatSlice';
 import ChatMsgLoading from '../../ChatMsgLoading';
@@ -361,6 +361,7 @@ const Chat = () => {
       if (fileInputRef.current) fileInputRef.current.value = '';
       setShowEmojiPicker(false);
       setIsSending(false);
+      setShowAttachOptions(false);
     }
   };
 
@@ -388,6 +389,74 @@ const Chat = () => {
       }, { merge: true });
     }, 500);
   };
+
+  const sendMessage = async (messageData) => {
+    try {
+      const chatRef = doc(db, 'chats', chat.chatId);
+
+      await updateDoc(chatRef, {
+        messages: arrayUnion(messageData),
+      });
+
+      // Update userChats (just like in handleSend)
+      const updateUserChat = async (uid) => {
+        const ref = doc(db, 'userChats', uid);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          const updated = snap.data().chats.map((c) => {
+            if (c.chatId !== chat.chatId) return c;
+
+            return {
+              ...c,
+              lastMessage: '📍 location',
+              updatedAt: Date.now(),
+              isSeen: uid === user.uid,
+              unreadMessages: uid === user.uid ? 0 : c.unreadMessages + 1,
+            };
+          });
+
+          await updateDoc(ref, { chats: updated });
+        }
+      };
+
+      await Promise.all([updateUserChat(user.uid), updateUserChat(chat.user.uid)]);
+    } catch (err) {
+      console.error('Failed to send location:', err);
+    }
+  };
+
+
+  const handleSendLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation not supported');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+
+        const locationMsg = {
+          type: 'location',
+          lat: latitude,
+          lng: longitude,
+          senderId: user.uid,
+          createdAt: new Date(),
+        };
+
+        sendMessage(locationMsg);
+      },
+      (error) => {
+        console.error('Location error:', error);
+        alert('Failed to get location');
+      }
+    );
+    setShowAttachOptions(false);
+  };
+
+
+
+
   return (
     <div
       className={`${chat === null || !showInfo ? 'flex-3' : 'flex-2'
@@ -506,7 +575,7 @@ const Chat = () => {
               )}
 
               {showAttachOptions && (
-                <div className="absolute bottom-16 left-10 bg-gray-800 text-white rounded-xl p-2 space-y-2 shadow-lg z-10">
+                <div className="absolute bottom-16 left-10 bg-gray-800 text-white rounded-xl p-2 space-y-2 shadow-lg z-50">
                   <div>
                     <label
                       htmlFor="chatImage"
@@ -540,6 +609,17 @@ const Chat = () => {
                       onChange={(e) => handleFileChange(e, 'doc')}
                     />
                   </div>
+
+                  <div>
+                    <button
+                      onClick={handleSendLocation}
+                      className="w-full flex items-center gap-2 hover:text-blue-400 duration-200 cursor-pointer text-white transition"
+                    >
+                      <IoLocationOutline />
+                      <span className="text-sm">Current Location</span>
+                    </button>
+                  </div>
+
                 </div>
               )}
 
