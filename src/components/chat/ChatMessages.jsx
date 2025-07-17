@@ -243,7 +243,7 @@ const ChatMessages = ({ currentChat, setCurrentChat, setReplyTo, setMsgReact, se
 
 
 
-                    <div className={`flex ${msg.text ? 'justify-between' : 'flex-col items-start'}`}>
+                    <div className={`flex justify-end`}>
                       {/* Text message */}
                       {msg.text && <div>{msg.text}</div>}
 
